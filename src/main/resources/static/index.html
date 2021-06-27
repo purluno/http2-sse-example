@@ -54,14 +54,14 @@ body {
 <div class="app">
     <div class="sendPanel">
         <input type="text" id="messageToSend">
-        <button id="sendButton">보내기</button>
-        <button id="clearButton">지우기</button>
+        <button id="sendButton">Send</button>
+        <button id="clearButton">Clear</button>
     </div>
     <div id="receivedMessages"></div>
 </div>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.js"></script>
 <script>
-// 텍스트 입력창에서 엔터 치면 메시지 보내기
+// Sends the written message when the Enter key is pressed
 let messageToSend = document.querySelector('#messageToSend')
 messageToSend.addEventListener('keydown', ({key}) => {
     if (key === 'Enter') {
@@ -69,26 +69,26 @@ messageToSend.addEventListener('keydown', ({key}) => {
     }
 })
 
-// 보내기 버튼 누르면 메시지 보내기
+// Sends the written message when the Send button is clicked
 let sendButton = document.querySelector('#sendButton')
 sendButton.addEventListener('click', ev => {
     sendMessage()
 })
 
-// 받은 메시지 출력하기
+// Connects to the server-sent events URL
 let receivedMessages = document.querySelector('#receivedMessages')
 window.addEventListener('load', () => {
     let eventReceiver = new EventReceiver(receivedMessages)
     eventReceiver.connect()
 })
 
-// 출력한 메시지 지우기
+// Clears the received messages div when the Clear button is clicked
 let clearButton = document.querySelector('#clearButton')
 clearButton.addEventListener('click', ev => {
     receivedMessages.textContent = '';
 })
 
-// 메시지 보내기
+// Send the written message at the input element
 function sendMessage() {
     let msg = messageToSend.value
     if (msg.length === 0) return
