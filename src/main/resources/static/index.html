@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hello world</title>
+<style>
+html {
+    margin: 0;
+    height: 100%;
+}
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    height: 100%;
+}
+.app {
+    width: 100%;
+    max-width: 800px;
+    height: 100%;
+    margin-left: 1em;
+    margin-right: 1em;
+    display: flex;
+    flex-direction: column;
+}
+.sendPanel {
+    margin-top: 1em;
+    display: inline-flex;
+}
+.sendPanel input {
+    flex-grow: 1;
+}
+.sendPanel button {
+    margin-left: 1em;
+}
+#messageToSend {
+}
+
+#receivedMessages {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    flex-grow: 1;
+    width: 100%;
+    border: 1px solid #333;
+    overflow-y: scroll;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="sendPanel">
+        <input type="text" id="messageToSend">
+        <button id="sendButton">보내기</button>
+        <button id="clearButton">지우기</button>
+    </div>
+    <div id="receivedMessages"></div>
+</div>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.js"></script>
+<script>
+// 텍스트 입력창에서 엔터 치면 메시지 보내기
+let messageToSend = document.querySelector('#messageToSend')
+messageToSend.addEventListener('keydown', ({key}) => {
+    if (key === 'Enter') {
+        sendMessage()
+    }
+})
+
+// 보내기 버튼 누르면 메시지 보내기
+let sendButton = document.querySelector('#sendButton')
+sendButton.addEventListener('click', ev => {
+    sendMessage()
+})
+
+// 받은 메시지 출력하기
+let receivedMessages = document.querySelector('#receivedMessages')
+window.addEventListener('load', () => {
+    let eventReceiver = new EventReceiver(receivedMessages)
+    eventReceiver.connect()
+})
+
+// 출력한 메시지 지우기
+let clearButton = document.querySelector('#clearButton')
+clearButton.addEventListener('click', ev => {
+    receivedMessages.textContent = '';
+})
+
+// 메시지 보내기
+function sendMessage() {
+    let msg = messageToSend.value
+    if (msg.length === 0) return
+    messageToSend.value = ''
+    axios.post('send', {'message': msg})
+}
+
+class EventReceiver {
+    constructor(receivedMessagesView) {
+        this.receivedMessagesView = receivedMessagesView
+        this.eventSource = null
+        this.reconnectBaseDelay = 1000
+        this.numRetries = 0
+    }
+
+    connect() {
+        this.close()
+        let eventSource = new EventSource('events')
+        eventSource.onopen = () => {
+            console.log('event source connected')
+            this.numRetries = 0
+        }
+        eventSource.onmessage = ({data}) => {
+            let textarea = this.receivedMessagesView
+            let tnode = document.createTextNode(data + '\n')
+            textarea.append(tnode)
+            textarea.scrollTop = textarea.scrollHeight
+        }
+        eventSource.onerror = err => {
+            this.reconnect()
+        }
+        this.eventSource = eventSource
+    }
+
+    reconnect() {
+        this.numRetries++
+        let delay = this.reconnectBaseDelay * this.numRetries
+        console.log(`will try to reconnect an event source after ${delay} ms.`)
+        setTimeout(() => {
+            this.connect()
+        }, delay)
+    }
+
+    close() {
+        if (this.eventSource) {
+            this.eventSource.close()
+            this.eventSource = null
+        }
+    }
+}
+</script>
+</body>
+</html>
