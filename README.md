@@ -17,7 +17,7 @@ You can test it on a browser at https://localhost:8443/.
 There's [a server certificate chain](src/main/resources/app-combined.p12)
 generated using [Minica](https://github.com/jsha/minica) at `PROJECT_ROOT/src/main/resources/app-combined.p12`.
 It's for `app` and `localhost` domain.
-you may register it to your system or browser as trusted CA or certificate,
+you may register it to your system or browser as trusted CA or certificate (password = `secret`),
 or you can replace it with your own certificate chain.
 
 ## Docker
